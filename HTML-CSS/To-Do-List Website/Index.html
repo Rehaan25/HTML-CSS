@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>My Tasks</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <h2>&#9989; Tasks</h2>
+      <nav>
+        <button class="nav-item active">All Tasks</button>
+        <button class="nav-item">Starred</button>
+        <button class="nav-item">&#10010; New List</button>
+      </nav>
+    </aside>
+
+    <main class="main-content">
+      <h1>My Tasks</h1>
+      <form id="todo-form">
+        <input type="text" id="task-input" placeholder="Add a task..." required />
+        <button type="submit">&#10010;</button>
+      </form>
+      <ul id="task-list"></ul>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

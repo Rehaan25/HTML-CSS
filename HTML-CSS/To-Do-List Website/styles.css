@@ -1,34 +1,36 @@
+/* Base + modern font */
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background: #b1a5a5;
-  color: #e0e0e0;
-  height: 100vh;
+  font-family: 'Segoe UI', sans-serif;
+  background: #0f172a;
+  color: #f1f5f9;
   display: flex;
+  height: 100vh;
 }
 
 .app {
   display: flex;
   width: 100%;
-  height: 100%;
 }
 
 .sidebar {
   width: 220px;
-  background: #1f1f1f;
+  background: #1e293b;
   padding: 20px;
   display: flex;
   flex-direction: column;
+  transition: left 0.3s ease;
+  z-index: 999;
 }
 
 .sidebar h2 {
-  margin-top: 0;
+  margin: 0 0 20px;
 }
 
 .nav-item {
   background: none;
   border: none;
-  color: #e0e0e0;
+  color: #f1f5f9;
   text-align: left;
   padding: 10px 0;
   cursor: pointer;
@@ -36,13 +38,15 @@ body {
 }
 
 .nav-item.active {
-  background: #333;
+  background: #3b82f6;
+  color: #fff;
   border-radius: 6px;
 }
 
 .main-content {
   flex: 1;
-  padding: 40px;
+  padding: 30px;
+  overflow-y: auto;
 }
 
 h1 {
@@ -56,48 +60,122 @@ form {
 
 #task-input {
   flex: 1;
-  padding: 10px;
-  background: #1f1f1f;
-  border: 1px solid #333;
+  padding: 12px;
+  background: #1e293b;
+  border: 1px solid #334155;
   border-radius: 4px;
-  color: #e0e0e0;
+  color: #f1f5f9;
 }
 
 form button {
-  background: #007bff;
+  background: #3b82f6;
   color: #fff;
   border: none;
   padding: 0 20px;
   margin-left: 10px;
   border-radius: 4px;
   cursor: pointer;
+  font-size: 18px;
 }
 
-#task-list {
+.task-section {
+  margin-bottom: 30px;
+}
+
+.task-section h2 {
+  margin: 10px 0;
+}
+
+ul {
   list-style: none;
   padding: 0;
 }
 
-#task-list li {
-  background: #1f1f1f;
-  border: 1px solid #333;
-  border-radius: 4px;
-  padding: 10px 15px;
+li {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 12px 15px;
   margin-bottom: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-#task-list li.completed {
-  text-decoration: line-through;
-  opacity: 0.6;
+.task-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.task-actions {
+  display: flex;
+  gap: 10px;
+}
+
+input[type="checkbox"] {
+  transform: scale(1.4);
+  cursor: pointer;
+}
+
+.start-btn {
+  background: none;
+  border: none;
+  color: #38bdf8;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.star-btn {
+  background: none;
+  border: none;
+  color: #fbbf24;
+  font-size: 18px;
+  cursor: pointer;
 }
 
 .delete-btn {
   background: none;
   border: none;
-  color: #ff5c5c;
+  color: #ef4444;
   font-size: 18px;
   cursor: pointer;
+}
+
+/* ✅ Removed strike-through — so no completed-text */
+
+.menu-toggle {
+  display: none;
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  font-size: 20px;
+  z-index: 1000;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .menu-toggle {
+    display: block;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -250px; /* hidden */
+    height: 100%;
+  }
+
+  .sidebar.open {
+    left: 0;
+  }
+
+  .main-content {
+    padding: 20px;
+  }
 }

@@ -3,50 +3,49 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Modern To-Do List</title>
+  <title>Project Tasks</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <!-- Hamburger for mobile -->
-  <button id="menu-toggle" class="menu-toggle">☰</button>
+  <main class="main-content">
+    <h1>Project Tasks</h1>
 
-  <div class="app">
-    <aside class="sidebar">
-      <h2>✅ Tasks</h2>
-      <nav>
-        <button class="nav-item active" data-tab="all">All Tasks</button>
-        <button class="nav-item" data-tab="starred">⭐ Starred</button>
-      </nav>
-    </aside>
+    <form id="task-form">
+      <input type="text" id="task-name" placeholder="Task Name" required />
+      <select id="task-status">
+        <option value="Open">Open</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Closed">Closed</option>
+      </select>
+      <select id="task-priority">
+        <option value="High">High</option>
+        <option value="Medium">Medium</option>
+        <option value="Low">Low</option>
+      </select>
+      <input type="date" id="task-due-date" required />
+      <button type="submit">Add Task</button>
+    </form>
 
-    <main class="main-content">
-      <h1>My To-Do List</h1>
-      <form id="todo-form">
-        <input type="text" id="task-input" placeholder="Add a new task..." required />
-        <button type="submit">+</button>
-      </form>
+    <div class="controls">
+      <button id="sort-due-date">Sort by Due Date ↑</button>
+      <button id="sort-priority">Sort by Priority ↓</button>
+      <button id="filter-open">Show Open Only</button>
+      <button id="clear-filters">Clear Filters</button>
+    </div>
 
-      <div class="task-section" id="upcoming-section">
-        <h2>📅 Upcoming</h2>
-        <ul id="upcoming-list"></ul>
-      </div>
-
-      <div class="task-section" id="ongoing-section">
-        <h2>⏳ Ongoing</h2>
-        <ul id="ongoing-list"></ul>
-      </div>
-
-      <div class="task-section" id="completed-section">
-        <h2>✅ Completed</h2>
-        <ul id="completed-list"></ul>
-      </div>
-
-      <div class="task-section" id="starred-section" style="display:none;">
-        <h2>⭐ Starred</h2>
-        <ul id="starred-list"></ul>
-      </div>
-    </main>
-  </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Select</th>
+          <th>Name</th>
+          <th>Status</th>
+          <th>Priority</th>
+          <th>Due Date</th>
+        </tr>
+      </thead>
+      <tbody id="task-table-body"></tbody>
+    </table>
+  </main>
 
   <script src="script.js"></script>
 </body>

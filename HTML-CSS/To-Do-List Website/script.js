@@ -1,186 +1,142 @@
-const form = document.getElementById('todo-form');
-const taskInput = document.getElementById('task-input');
-const upcomingList = document.getElementById('upcoming-list');
-const ongoingList = document.getElementById('ongoing-list');
-const completedList = document.getElementById('completed-list');
-const starredList = document.getElementById('starred-list');
+const taskForm = document.getElementById('task-form');
+const taskName = document.getElementById('task-name');
+const taskStatus = document.getElementById('task-status');
+const taskPriority = document.getElementById('task-priority');
+const taskDueDate = document.getElementById('task-due-date');
+const tableBody = document.getElementById('task-table-body');
 
-const navItems = document.querySelectorAll('.nav-item');
-const allSections = document.querySelectorAll('.task-section');
-const starredSection = document.getElementById('starred-section');
-
-// Mobile menu toggle
-const menuToggle = document.getElementById('menu-toggle');
-const sidebar = document.querySelector('.sidebar');
-
-menuToggle.addEventListener('click', () => {
-  sidebar.classList.toggle('open');
-});
+const sortDueBtn = document.getElementById('sort-due-date');
+const sortPriorityBtn = document.getElementById('sort-priority');
+const filterOpenBtn = document.getElementById('filter-open');
+const clearFiltersBtn = document.getElementById('clear-filters');
 
 let tasks = [];
+let sortBy = null;
+let filterBy = null;
+let selected = new Set();
 
-// Load tasks
-window.addEventListener('DOMContentLoaded', () => {
-  const saved = localStorage.getItem('tasks');
-  if (saved) {
-    tasks = JSON.parse(saved);
-    renderTasks();
-  }
-});
+// ✅ If no tasks saved yet, preload with your JSON!
+if (!localStorage.getItem('tasks')) {
+  const initialTasks = [
+    { "id": 1, "name": "Design Landing Page", "status": "Open", "priority": "High", "dueDate": "2025-07-15" },
+    { "id": 2, "name": "Implement Authentication", "status": "In Progress", "priority": "Medium", "dueDate": "2025-07-10" },
+    { "id": 3, "name": "Write Unit Tests", "status": "Closed", "priority": "Low", "dueDate": "2025-07-05" },
+    { "id": 4, "name": "Set Up CI/CD Pipeline", "status": "Open", "priority": "High", "dueDate": "2025-07-20" },
+    { "id": 5, "name": "Update Documentation", "status": "In Progress", "priority": "Low", "dueDate": "2025-07-12" },
+    { "id": 6, "name": "Refactor Codebase", "status": "Open", "priority": "Medium", "dueDate": "2025-07-18" },
+    { "id": 7, "name": "User Feedback Survey", "status": "Closed", "priority": "Medium", "dueDate": "2025-07-08" },
+    { "id": 8, "name": "Performance Optimization", "status": "In Progress", "priority": "High", "dueDate": "2025-07-22" },
+    { "id": 9, "name": "Set Up Monitoring", "status": "Open", "priority": "High", "dueDate": "2025-07-25" },
+    { "id": 10, "name": "Finalize Release Notes", "status": "Closed", "priority": "Low", "dueDate": "2025-07-03" }
+  ];
+  localStorage.setItem('tasks', JSON.stringify(initialTasks));
+}
 
-// Add new task
-form.addEventListener('submit', (e) => {
+load();
+
+taskForm.addEventListener('submit', e => {
   e.preventDefault();
-  const text = taskInput.value.trim();
-  if (!text) return;
 
   const task = {
     id: Date.now(),
-    text,
-    status: 'upcoming',
-    starred: false
+    name: taskName.value.trim(),
+    status: taskStatus.value,
+    priority: taskPriority.value,
+    dueDate: taskDueDate.value
   };
 
   tasks.push(task);
-  saveTasks();
-  renderTasks();
-  taskInput.value = '';
+  save();
+  render();
+  taskForm.reset();
 });
 
-// Render tasks
-function renderTasks() {
-  upcomingList.innerHTML = '';
-  ongoingList.innerHTML = '';
-  completedList.innerHTML = '';
+function render() {
+  tableBody.innerHTML = '';
 
-  tasks.forEach(task => {
-    const li = document.createElement('li');
+  let view = [...tasks];
 
-    const left = document.createElement('div');
-    left.className = 'task-left';
+  if (filterBy === 'Open') {
+    view = view.filter(task => task.status === 'Open');
+  }
 
+  if (sortBy === 'DueDate') {
+    view.sort((a,b) => new Date(a.dueDate) - new Date(b.dueDate));
+  }
+
+  if (sortBy === 'Priority') {
+    const order = { High: 3, Medium: 2, Low: 1 };
+    view.sort((a,b) => order[b.priority] - order[a.priority]);
+  }
+
+  view.forEach(task => {
+    const row = document.createElement('tr');
+
+    const selectCell = document.createElement('td');
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
-    checkbox.checked = task.status === 'completed';
-    checkbox.addEventListener('change', () => toggleComplete(task.id));
+    checkbox.checked = selected.has(task.id);
+    checkbox.addEventListener('change', () => {
+      if (checkbox.checked) selected.add(task.id);
+      else selected.delete(task.id);
+      save();
+    });
+    selectCell.appendChild(checkbox);
 
-    const text = document.createElement('span');
-    text.textContent = task.text;
+    row.appendChild(selectCell);
+    row.innerHTML += `
+      <td>${task.name}</td>
+      <td>${task.status}</td>
+      <td>${task.priority}</td>
+      <td>${task.dueDate}</td>
+    `;
 
-    left.appendChild(checkbox);
-    left.appendChild(text);
-
-    const actions = document.createElement('div');
-    actions.className = 'task-actions';
-
-    if (task.status === 'upcoming') {
-      const startBtn = document.createElement('button');
-      startBtn.className = 'start-btn';
-      startBtn.textContent = '▶️';
-      startBtn.addEventListener('click', () => moveToOngoing(task.id));
-      actions.appendChild(startBtn);
-    }
-
-    const starBtn = document.createElement('button');
-    starBtn.className = 'star-btn';
-    starBtn.innerHTML = task.starred ? '⭐' : '☆';
-    starBtn.addEventListener('click', () => toggleStar(task.id));
-
-    const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'delete-btn';
-    deleteBtn.textContent = '❌';
-    deleteBtn.addEventListener('click', () => deleteTask(task.id));
-
-    actions.appendChild(starBtn);
-    actions.appendChild(deleteBtn);
-
-    li.appendChild(left);
-    li.appendChild(actions);
-
-    if (task.status === 'upcoming') upcomingList.appendChild(li);
-    else if (task.status === 'ongoing') ongoingList.appendChild(li);
-    else completedList.appendChild(li);
+    tableBody.appendChild(row);
   });
 }
 
-// Tabs
-navItems.forEach(nav => {
-  nav.addEventListener('click', () => {
-    navItems.forEach(n => n.classList.remove('active'));
-    nav.classList.add('active');
-
-    if (nav.dataset.tab === 'starred') {
-      allSections.forEach(sec => sec.style.display = 'none');
-      starredSection.style.display = 'block';
-      renderStarred();
-    } else {
-      allSections.forEach(sec => sec.style.display = 'block');
-      starredSection.style.display = 'none';
-    }
-
-    // Auto close sidebar on mobile
-    sidebar.classList.remove('open');
-  });
+sortDueBtn.addEventListener('click', () => {
+  sortBy = 'DueDate';
+  save();
+  render();
 });
 
-function renderStarred() {
-  starredList.innerHTML = '';
-  tasks.filter(t => t.starred).forEach(task => {
-    const li = document.createElement('li');
-    li.textContent = task.text;
-    starredList.appendChild(li);
-  });
-}
+sortPriorityBtn.addEventListener('click', () => {
+  sortBy = 'Priority';
+  save();
+  render();
+});
 
-function toggleComplete(id) {
-  tasks = tasks.map(task => {
-    if (task.id === id) {
-      if (task.status === 'completed') {
-        task.status = 'ongoing';
-      } else {
-        task.status = 'completed';
-      }
-    }
-    return task;
-  });
-  saveTasks();
-  renderTasks();
-}
+filterOpenBtn.addEventListener('click', () => {
+  filterBy = 'Open';
+  save();
+  render();
+});
 
-function moveToOngoing(id) {
-  tasks = tasks.map(task => {
-    if (task.id === id) task.status = 'ongoing';
-    return task;
-  });
-  saveTasks();
-  renderTasks();
-}
+clearFiltersBtn.addEventListener('click', () => {
+  sortBy = null;
+  filterBy = null;
+  save();
+  render();
+});
 
-function toggleStar(id) {
-  tasks = tasks.map(task => {
-    if (task.id === id) {
-      task.starred = !task.starred;
-      if (task.starred) {
-        alert('Reminder: Do you want to repeat this task tomorrow?');
-      }
-    }
-    return task;
-  });
-  saveTasks();
-  renderTasks();
-}
-
-function deleteTask(id) {
-  const task = tasks.find(task => task.id === id);
-  if (task.starred) {
-    alert('Please unstar this task before deleting.');
-    return;
-  }
-  tasks = tasks.filter(task => task.id !== id);
-  saveTasks();
-  renderTasks();
-}
-
-function saveTasks() {
+function save() {
   localStorage.setItem('tasks', JSON.stringify(tasks));
+  localStorage.setItem('sortBy', sortBy);
+  localStorage.setItem('filterBy', filterBy);
+  localStorage.setItem('selected', JSON.stringify([...selected]));
+}
+
+function load() {
+  const savedTasks = localStorage.getItem('tasks');
+  const savedSort = localStorage.getItem('sortBy');
+  const savedFilter = localStorage.getItem('filterBy');
+  const savedSelected = localStorage.getItem('selected');
+
+  if (savedTasks) tasks = JSON.parse(savedTasks);
+  if (savedSort) sortBy = savedSort;
+  if (savedFilter) filterBy = savedFilter;
+  if (savedSelected) selected = new Set(JSON.parse(savedSelected));
+
+  render();
 }
